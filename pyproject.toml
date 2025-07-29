@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "sincpro-py-compiler"
-version = "0.1.0"
-description = "Herramienta simple para compilar proyectos Python (.py → .pyc) y distribuir código compilado"
+version = "1.1.0"
+description = "Herramienta simple para compilar proyectos Python (.py → .pyc) y distribuir código compilado con protección por contraseña"
 authors = ["Sincpro SRL <dev@sincpro.com>"]
 readme = "README.md"
 license = "MIT"
 homepage = "https://github.com/Sincpro-SRL/sincpro_py_compiler"
 repository = "https://github.com/Sincpro-SRL/sincpro_py_compiler"
 documentation = "https://github.com/Sincpro-SRL/sincpro_py_compiler/tree/main/docs"
-keywords = ["python", "compiler", "pyc", "build", "packaging", "distribution"]
+keywords = ["python", "compiler", "pyc", "build", "packaging", "distribution", "security", "encryption", "password-protection"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
