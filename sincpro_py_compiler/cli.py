@@ -39,6 +39,17 @@ def main():
         "-v", "--verbose", action="store_true", help="Mostrar información detallada"
     )
 
+    # Argumentos para seguridad (compresión/encriptación)
+    parser.add_argument(
+        "--compress", action="store_true", help="Comprimir código compilado con contraseña"
+    )
+    parser.add_argument(
+        "--encrypt", action="store_true", help="Encriptar código compilado con contraseña"
+    )
+    parser.add_argument(
+        "--password", help="Contraseña/licencia para proteger el código compilado"
+    )
+
     args = parser.parse_args()
 
     # Configurar nivel de logging
@@ -64,6 +75,15 @@ def main():
     if not args.source:
         parser.error("Se requiere especificar el directorio fuente")
 
+    # Validar argumentos de seguridad
+    security_methods = [args.compress, args.encrypt]
+    if sum(security_methods) > 1:
+        parser.error("Solo se puede usar un método de seguridad: --compress o --encrypt")
+
+    use_security = any(security_methods)
+    if use_security and not args.password:
+        parser.error("Se requiere --password cuando se usa --compress o --encrypt")
+
     # Directorio de salida por defecto
     output_dir = args.output or "./compiled"
 
@@ -76,11 +96,51 @@ def main():
         remove_py=args.remove_py,
     )
 
-    if success:
-        print("🎉 Compilación exitosa!")
-    else:
+    if not success:
         print("❌ Error en la compilación")
         exit(1)
+
+    # Aplicar seguridad si se solicitó
+    if use_security:
+        from pathlib import Path
+
+        from .infrastructure.security_manager import SecurityManager
+
+        security_manager = SecurityManager()
+
+        # Determinar método y archivo de salida
+        if args.compress:
+            method = "compress"
+            protected_file = Path(output_dir).parent / f"{Path(output_dir).name}.zip"
+        else:  # encrypt
+            method = "encrypt"
+            protected_file = Path(output_dir).parent / f"{Path(output_dir).name}.enc"
+
+        print(f"🔒 Aplicando protección ({method})...")
+
+        security_success = security_manager.protect_compiled_code(
+            compiled_dir=Path(output_dir),
+            output_file=protected_file,
+            password=args.password,
+            method=method,
+        )
+
+        if security_success:
+            print(f"🎉 Código protegido exitosamente: {protected_file}")
+
+            # Opcional: eliminar directorio no protegido
+            import shutil
+
+            try:
+                shutil.rmtree(output_dir)
+                print(f"📁 Directorio temporal eliminado: {output_dir}")
+            except Exception as e:
+                print(f"⚠️  No se pudo eliminar directorio temporal: {e}")
+        else:
+            print("❌ Error aplicando protección")
+            exit(1)
+    else:
+        print("🎉 Compilación exitosa!")
 
 
 if __name__ == "__main__":

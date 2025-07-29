@@ -44,6 +44,47 @@ sincpro-compile ./mi_addon_odoo -t odoo
 sincpro-compile --list-templates
 ```
 
+### 🔒 Protección del Código Compilado (Nuevo Feature)
+
+**SincPro Python Compiler** ahora incluye funcionalidades de seguridad para proteger tu código compilado mediante compresión con contraseña o encriptación simple. Esto es especialmente útil para la distribución comercial donde necesitas una licencia/contraseña para acceder al código.
+
+#### Compresión con Contraseña
+
+```bash
+# Compilar y comprimir con contraseña
+sincpro-compile ./mi_proyecto --compress --password "mi_licencia_comercial"
+
+# Resultado: mi_proyecto_compilado.zip (protegido)
+```
+
+#### Encriptación Simple
+
+```bash
+# Compilar y encriptar con contraseña
+sincpro-compile ./mi_proyecto --encrypt --password "clave_secreta"
+
+# Resultado: mi_proyecto_compilado.enc (encriptado)
+```
+
+#### Desproteger Código
+
+Para usar código protegido, utiliza el comando de desprotección:
+
+```bash
+# Descomprimir código protegido
+sincpro-decrypt ./codigo_protegido.zip --password "mi_licencia_comercial" -o ./codigo_desprotegido
+
+# Desencriptar código protegido  
+sincpro-decrypt ./codigo_protegido.enc --password "clave_secreta" -o ./codigo_desprotegido
+```
+
+#### Ventajas de la Protección
+
+- **Distribución Segura**: El código compilado no puede ser accedido sin la contraseña/licencia
+- **Control de Licencias**: Cada cliente necesita su propia contraseña para ejecutar el código
+- **Protección Comercial**: Impide el acceso casual al código .pyc
+- **Flexibilidad**: Elige entre compresión (más compatible) o encriptación (más segura)
+
 ### Uso con diferentes tipos de proyecto
 
 #### Proyecto Python básico
