@@ -371,3 +371,46 @@ secret.py
         assert (output_dir / "demo" / "demo.xml").exists()
         assert (output_dir / "security" / "groups.xml").exists()
         shutil.rmtree(temp_dir)
+
+    def test_copy_faithful_file_python_module_content(self):
+        """Test: Copia fiel usando archivo .py y verifica contenido copiado"""
+        # Crear estructura de proyecto
+        (self.temp_dir / "main.py").write_text('print("main")')
+        (self.temp_dir / "config.json").write_text('{"debug": true}')
+        (self.temp_dir / "logo.png").write_bytes(b"PNGDATA")
+        assets_dir = self.temp_dir / "assets"
+        assets_dir.mkdir()
+        (assets_dir / "file.txt").write_text("contenido asset")
+
+        # Crear archivo Python con patrones de copia fiel
+        copy_faithful_py = self.temp_dir / "mi_copias_fieles.py"
+        copy_faithful_py.write_text(
+            """
+COPY_FAITHFUL_PATTERNS = [
+    "config.json",
+    "assets/",
+    "logo.png",
+]
+"""
+        )
+
+        # Directorio de salida
+        output_dir = self.temp_dir / "dist_py_content"
+
+        # Compilar usando archivo de copia fiel .py
+        success = self.compiler.compile_project(
+            source_dir=str(self.temp_dir),
+            output_dir=str(output_dir),
+            template="basic",
+            copy_faithful_file=str(copy_faithful_py),
+        )
+        assert success
+        # Verificar que los archivos/folders se copiaron fielmente y su contenido
+        assert (output_dir / "config.json").exists()
+        assert (output_dir / "logo.png").exists()
+        assert (output_dir / "assets" / "file.txt").exists()
+        assert (output_dir / "config.json").read_text() == '{"debug": true}'
+        assert (output_dir / "logo.png").read_bytes() == b"PNGDATA"
+        assert (output_dir / "assets" / "file.txt").read_text() == "contenido asset"
+        # Verificar que el archivo Python fue compilado
+        assert (output_dir / "main.pyc").exists()

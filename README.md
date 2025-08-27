@@ -100,6 +100,43 @@ Por ejemplo, en el template `odoo`, los siguientes archivos y carpetas se copian
 
 Esto es útil para mantener la integridad de archivos requeridos por Odoo y otros frameworks, evitando su compilación o exclusión.
 
+### Opciones avanzadas de copia fiel
+
+Puedes definir archivos y carpetas adicionales para copiar fielmente usando la opción:
+
+```bash
+sincpro-compile ./mi_proyecto --copy-faithful-file mi_copias_fieles.txt
+```
+
+El archivo debe contener un patrón por línea, por ejemplo:
+
+```
+# Copias fieles personalizadas
+config.json
+assets/
+logo.png
+```
+
+Estos patrones se suman a los definidos por el template seleccionado.
+
+### Copia fiel usando patrones directos
+
+Además de usar archivos de patrones, puedes pasar patrones directos o una lista separada por comas con la opción:
+
+```bash
+sincpro-compile ./mi_addon_odoo --copy-faithful-file __manifest__.py -o ./dist
+```
+
+O múltiples patrones:
+
+```bash
+sincpro-compile ./mi_addon_odoo --copy-faithful-file "__manifest__.py,config.json,logo.png" -o ./dist
+```
+
+Esto copiará fielmente los archivos y carpetas indicados, sin necesidad de crear un archivo de patrones.
+
+También puedes seguir usando archivos de texto o archivos Python (.py) con la variable `COPY_FAITHFUL_PATTERNS` para definir múltiples patrones.
+
 ### Ejemplo de uso
 
 ```bash

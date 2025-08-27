@@ -2,6 +2,7 @@
 Implementación principal del compilador de proyectos
 """
 
+import importlib.util
 import logging
 import os
 from pathlib import Path
@@ -31,6 +32,7 @@ class PythonCompiler:
         template: str = "basic",
         exclude_file: Optional[str] = None,
         remove_py: bool = False,
+        copy_faithful_file: Optional[str] = None,
     ) -> bool:
         """
         Compila un proyecto Python completo
@@ -64,6 +66,32 @@ class PythonCompiler:
             copy_faithful_patterns = self.compiler_service.get_copy_faithful_patterns(
                 template
             )
+            # Cargar patrones personalizados de copia fiel si se especifica
+            if copy_faithful_file:
+                if os.path.exists(copy_faithful_file):
+                    if copy_faithful_file.endswith(".py"):
+                        # Cargar como módulo Python
+                        spec = importlib.util.spec_from_file_location(
+                            "copy_faithful_module", copy_faithful_file
+                        )
+                        module = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(module)
+                        patterns = getattr(module, "COPY_FAITHFUL_PATTERNS", [])
+                        if isinstance(patterns, list):
+                            copy_faithful_patterns.extend(patterns)
+                    else:
+                        # Cargar como texto plano
+                        with open(copy_faithful_file, "r", encoding="utf-8") as f:
+                            for line in f:
+                                line = line.strip()
+                                if line and not line.startswith("#"):
+                                    copy_faithful_patterns.append(line)
+                else:
+                    # Tratar como patrón directo o lista separada por comas
+                    for pattern in copy_faithful_file.split(","):
+                        pattern = pattern.strip()
+                        if pattern:
+                            copy_faithful_patterns.append(pattern)
             logger.info(f"Usando template: {template}")
             logger.info(f"Patrones de exclusión: {len(exclude_patterns)}")
             logger.info(f"Patrones de copia fiel: {len(copy_faithful_patterns)}")
