@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sincpro-py-compiler"
-version = "0.1.0"
+version = "0.2.0"
 description = "Herramienta simple para compilar proyectos Python (.py → .pyc) y distribuir código compilado con protección por contraseña"
 authors = ["Sincpro SRL <dev@sincpro.com>"]
 readme = "README.md"
