@@ -85,6 +85,68 @@ sincpro-decrypt ./codigo_protegido.enc --password "clave_secreta" -o ./codigo_de
 - **Protección Comercial**: Impide el acceso casual al código .pyc
 - **Flexibilidad**: Elige entre compresión (más compatible) o encriptación (más segura)
 
+### 📦 Copias fieles por template (Nuevo Feature)
+
+A partir de la versión actual, SincPro Python Compiler permite definir archivos y carpetas que serán **copiados fielmente** (sin compilar ni excluir) según el template seleccionado.
+
+Por ejemplo, en el template `odoo`, los siguientes archivos y carpetas se copian tal cual al directorio de salida:
+
+- `__manifest__.py`
+- `__openerp__.py`
+- `static/`
+- `data/`
+- `demo/`
+- `security/`
+
+Esto es útil para mantener la integridad de archivos requeridos por Odoo y otros frameworks, evitando su compilación o exclusión.
+
+### Opciones avanzadas de copia fiel
+
+Puedes definir archivos y carpetas adicionales para copiar fielmente usando la opción:
+
+```bash
+sincpro-compile ./mi_proyecto --copy-faithful-file mi_copias_fieles.txt
+```
+
+El archivo debe contener un patrón por línea, por ejemplo:
+
+```
+# Copias fieles personalizadas
+config.json
+assets/
+logo.png
+```
+
+Estos patrones se suman a los definidos por el template seleccionado.
+
+### Copia fiel usando patrones directos
+
+Además de usar archivos de patrones, puedes pasar patrones directos o una lista separada por comas con la opción:
+
+```bash
+sincpro-compile ./mi_addon_odoo --copy-faithful-file __manifest__.py -o ./dist
+```
+
+O múltiples patrones:
+
+```bash
+sincpro-compile ./mi_addon_odoo --copy-faithful-file "__manifest__.py,config.json,logo.png" -o ./dist
+```
+
+Esto copiará fielmente los archivos y carpetas indicados, sin necesidad de crear un archivo de patrones.
+
+También puedes seguir usando archivos de texto o archivos Python (.py) con la variable `COPY_FAITHFUL_PATTERNS` para definir múltiples patrones.
+
+### Ejemplo de uso
+
+```bash
+sincpro-compile ./mi_addon_odoo -t odoo
+```
+
+En este caso, los archivos `.py` se compilan a `.pyc`, los archivos definidos como "copias fieles" se copian tal cual, y el resto se excluye según el template.
+
+Puedes personalizar los templates o agregar tus propios patrones en la carpeta `resources/exclude_patterns/`.
+
 ### Uso con diferentes tipos de proyecto
 
 #### Proyecto Python básico

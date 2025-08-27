@@ -49,6 +49,10 @@ def main():
     parser.add_argument(
         "--password", help="Contraseña/licencia para proteger el código compilado"
     )
+    parser.add_argument(
+        "--copy-faithful-file",
+        help="Archivo con patrones de copia fiel (uno por línea)",
+    )
 
     args = parser.parse_args()
 
@@ -94,6 +98,7 @@ def main():
         template=args.template,
         exclude_file=args.exclude_file,
         remove_py=args.remove_py,
+        copy_faithful_file=args.copy_faithful_file,
     )
 
     if not success:
