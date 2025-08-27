@@ -37,12 +37,20 @@ class TestCompilerService:
 
     def test_patrones_template_odoo(self):
         """Test patrones específicos de Odoo"""
-        patterns = self.service.get_exclude_patterns("odoo")
+        exclude_patterns = self.service.get_exclude_patterns("odoo")
+        copy_faithful_patterns = self.service.get_copy_faithful_patterns("odoo")
 
-        assert "__manifest__.py" in patterns
-        assert "__openerp__.py" in patterns
-        assert "static/" in patterns
-        assert "data/" in patterns
+        # Los manifests ya no deben estar en exclusión
+        assert "__manifest__.py" not in exclude_patterns
+        assert "__openerp__.py" not in exclude_patterns
+        # Deben estar en copia fiel
+        assert "__manifest__.py" in copy_faithful_patterns
+        assert "__openerp__.py" in copy_faithful_patterns
+        # Los directorios de datos deben estar en copia fiel
+        assert "static/" in copy_faithful_patterns
+        assert "data/" in copy_faithful_patterns
+        assert "demo/" in copy_faithful_patterns
+        assert "security/" in copy_faithful_patterns
 
     def test_should_exclude_archivo_pyc(self):
         """Test exclusión de archivos .pyc"""
@@ -212,18 +220,18 @@ class TestPythonCompiler:
         assert not (output_dir / "static").exists()
 
     def test_caso_uso_addon_odoo(self):
-        """Test: Compilar addon Odoo excluyendo manifests"""
+        """Test: Compilar addon Odoo copiando manifests y carpetas fielmente"""
         # Crear estructura Odoo
         (self.temp_dir / "models.py").write_text("class Partner: pass")
         (self.temp_dir / "views.py").write_text("# vistas")
         (self.temp_dir / "__manifest__.py").write_text("{'name': 'Mi Addon'}")
 
-        # Archivos de datos (deben excluirse)
+        # Archivos de datos (deben copiarse fielmente)
         data_dir = self.temp_dir / "data"
         data_dir.mkdir()
         (data_dir / "records.xml").write_text("<data></data>")
 
-        # Security (debe excluirse)
+        # Security (debe copiarse fielmente)
         security_dir = self.temp_dir / "security"
         security_dir.mkdir()
         (security_dir / "groups.xml").write_text("<security></security>")
@@ -240,12 +248,10 @@ class TestPythonCompiler:
         assert (output_dir / "models.pyc").exists()
         assert (output_dir / "views.pyc").exists()
 
-        # Manifest excluido (información sensible)
-        assert not (output_dir / "__manifest__.py").exists()
-
-        # Data y security excluidos
-        assert not (output_dir / "data").exists()
-        assert not (output_dir / "security").exists()
+        # Manifest y carpetas deben copiarse fielmente
+        assert (output_dir / "__manifest__.py").exists()
+        assert (output_dir / "data" / "records.xml").exists()
+        assert (output_dir / "security" / "groups.xml").exists()
 
     def test_caso_uso_proyecto_con_estructura_compleja(self):
         """Test: Proyecto con estructura de subdirectorios"""
@@ -331,3 +337,37 @@ secret.py
         assert "django:" in output
         assert "odoo:" in output
         assert "__pycache__/" in output
+
+    def test_copia_fiel_archivos_odoo(self):
+        """Test: Archivos/carpeta de Odoo se copian fielmente"""
+        temp_dir = Path(tempfile.mkdtemp())
+        output_dir = temp_dir / "output"
+        temp_dir.mkdir(exist_ok=True)
+        (temp_dir / "__manifest__.py").write_text("{'name': 'Mi Addon'}")
+        (temp_dir / "__openerp__.py").write_text("{'name': 'Mi Addon'}")
+        static_dir = temp_dir / "static"
+        static_dir.mkdir()
+        (static_dir / "file.js").write_text("console.log('test')")
+        data_dir = temp_dir / "data"
+        data_dir.mkdir()
+        (data_dir / "records.xml").write_text("<data></data>")
+        demo_dir = temp_dir / "demo"
+        demo_dir.mkdir()
+        (demo_dir / "demo.xml").write_text("<demo></demo>")
+        security_dir = temp_dir / "security"
+        security_dir.mkdir()
+        (security_dir / "groups.xml").write_text("<security></security>")
+
+        compiler = PythonCompiler()
+        success = compiler.compile_project(
+            source_dir=str(temp_dir), output_dir=str(output_dir), template="odoo"
+        )
+        assert success
+        # Verificar que los archivos/carpeta se copiaron fielmente
+        assert (output_dir / "__manifest__.py").exists()
+        assert (output_dir / "__openerp__.py").exists()
+        assert (output_dir / "static" / "file.js").exists()
+        assert (output_dir / "data" / "records.xml").exists()
+        assert (output_dir / "demo" / "demo.xml").exists()
+        assert (output_dir / "security" / "groups.xml").exists()
+        shutil.rmtree(temp_dir)

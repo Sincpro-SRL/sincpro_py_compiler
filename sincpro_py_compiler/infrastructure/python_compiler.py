@@ -57,12 +57,16 @@ class PythonCompiler:
             if not self.file_manager.create_directory(output_path):
                 return False
 
-            # Obtener patrones de exclusión
+            # Obtener patrones de exclusión y copia fiel
             exclude_patterns = self.compiler_service.get_exclude_patterns(
                 template, exclude_file
             )
+            copy_faithful_patterns = self.compiler_service.get_copy_faithful_patterns(
+                template
+            )
             logger.info(f"Usando template: {template}")
             logger.info(f"Patrones de exclusión: {len(exclude_patterns)}")
+            logger.info(f"Patrones de copia fiel: {len(copy_faithful_patterns)}")
 
             compiled_count = 0
             copied_count = 0
@@ -82,6 +86,15 @@ class PythonCompiler:
                 for file in files:
                     file_path = Path(root) / file
                     relative_path = file_path.relative_to(source_path)
+
+                    # Copia fiel: si coincide, copiar tal cual y continuar
+                    if self.compiler_service.should_copy_faithful(
+                        file_path, copy_faithful_patterns
+                    ):
+                        output_file_path = output_path / relative_path
+                        if self.file_manager.copy_file(file_path, output_file_path):
+                            copied_count += 1
+                        continue
 
                     # Verificar si debe excluirse
                     if self.compiler_service.should_exclude(file_path, exclude_patterns):

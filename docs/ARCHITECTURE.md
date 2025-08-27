@@ -235,6 +235,23 @@ flowchart TD
     style E fill:#ffebee
 ```
 
+## 🔧 Lógica de Copias Fieles en la Infraestructura
+
+El flujo de compilación en SincPro Python Compiler ahora incluye la capacidad de **copiar archivos y carpetas fielmente** según patrones definidos en cada template. Esta lógica está implementada en la capa de infraestructura (`PythonCompiler` y `CompilerService`).
+
+- Los archivos y carpetas definidos como "copias fieles" en el template (por ejemplo, `odoo`) se copian tal cual al directorio de salida, sin ser compilados ni excluidos.
+- El resto de archivos `.py` se compilan a `.pyc`.
+- Los patrones de exclusión siguen aplicándose normalmente.
+
+Esta funcionalidad permite mantener la integridad de archivos requeridos por frameworks como Odoo, facilitando la distribución y despliegue sin perder información esencial.
+
+**Ejemplo:**
+
+- Template `odoo`: Copia fiel de `__manifest__.py`, `__openerp__.py`, `static/`, `data/`, `demo/`, `security/`.
+- Template `django`: Excluye carpetas como `migrations/`, `static/`, pero no realiza copias fieles por defecto.
+
+La lógica puede ser extendida o personalizada editando los templates en `resources/exclude_patterns/`.
+
 ## 🧪 Arquitectura de Testing
 
 ```mermaid

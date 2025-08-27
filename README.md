@@ -85,6 +85,31 @@ sincpro-decrypt ./codigo_protegido.enc --password "clave_secreta" -o ./codigo_de
 - **Protección Comercial**: Impide el acceso casual al código .pyc
 - **Flexibilidad**: Elige entre compresión (más compatible) o encriptación (más segura)
 
+### 📦 Copias fieles por template (Nuevo Feature)
+
+A partir de la versión actual, SincPro Python Compiler permite definir archivos y carpetas que serán **copiados fielmente** (sin compilar ni excluir) según el template seleccionado.
+
+Por ejemplo, en el template `odoo`, los siguientes archivos y carpetas se copian tal cual al directorio de salida:
+
+- `__manifest__.py`
+- `__openerp__.py`
+- `static/`
+- `data/`
+- `demo/`
+- `security/`
+
+Esto es útil para mantener la integridad de archivos requeridos por Odoo y otros frameworks, evitando su compilación o exclusión.
+
+### Ejemplo de uso
+
+```bash
+sincpro-compile ./mi_addon_odoo -t odoo
+```
+
+En este caso, los archivos `.py` se compilan a `.pyc`, los archivos definidos como "copias fieles" se copian tal cual, y el resto se excluye según el template.
+
+Puedes personalizar los templates o agregar tus propios patrones en la carpeta `resources/exclude_patterns/`.
+
 ### Uso con diferentes tipos de proyecto
 
 #### Proyecto Python básico
